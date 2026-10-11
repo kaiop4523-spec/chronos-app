@@ -3,387 +3,605 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0ea5c6">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Chronos">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Chronos 控制台</title>
+<meta name="description" content="克羅諾斯智慧助理：待辦、日曆、記帳一站管理">
+<meta name="theme-color" content="#0ea5e9">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Chronos">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
-:root{--bg:#f2f9fb;--card:#fff;--text:#16313a;--muted:#6a8590;--brand:#0ea5c6;--brand2:#14b8a6;--line:#dcebf0;--danger:#e5484d;--ok:#16a34a;--warn:#b45309}
-@media (prefers-color-scheme:dark){:root{--bg:#0c171c;--card:#14242b;--text:#e6f1f4;--muted:#8fa7b0;--line:#233a43}}
+:root{
+  --bg:#f3f8fc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+  --primary:#0ea5e9; --primary-d:#0284c7; --accent:#14b8a6; --danger:#e11d48; --warn:#d97706;
+  --chip:#eef6fb; --shadow:0 1px 2px rgba(15,23,42,.06),0 6px 18px rgba(14,165,233,.08);
+  --radius:16px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a1220; --card:#111c30; --ink:#e7eef9; --muted:#93a4bd; --line:#1f2e47;
+    --chip:#172640; --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
+  }
+}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
-header{position:sticky;top:0;z-index:5;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;display:flex;justify-content:space-between;align-items:center}
-header h1{margin:0;font-size:18px}
-#who{font-size:13px;opacity:.9}
-main{padding:14px 16px calc(84px + env(safe-area-inset-bottom));max-width:640px;margin:0 auto}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:6}
-nav button{flex:1;border:0;background:none;color:var(--muted);padding:10px 0 8px;font-size:12px}
-nav button b{display:block;font-size:20px;font-weight:400}
-nav button.on{color:var(--brand);font-weight:700}
-h2{font-size:15px;margin:18px 4px 8px;color:var(--muted);font-weight:600}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
-.t{font-weight:700;word-break:break-word}
-.m{color:var(--muted);font-size:13px;margin-top:2px;word-break:break-word}
-.od{color:var(--danger)}
-.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-button.b,.row button{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:8px 12px;font-size:14px}
-button.pri{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
-button.ghost{color:var(--muted)}
-button.danger{color:var(--danger);border-color:var(--danger)}
-button:disabled{opacity:.5}
-input,select,textarea{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:10px;padding:10px;font:inherit}
-textarea{min-height:96px;resize:vertical}
-label.f{display:block;margin:10px 0 4px;font-size:13px;color:var(--muted)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.big{font-size:34px;font-weight:800;color:var(--brand)}
-.sw{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0}
-.sw small{display:block;color:var(--muted);font-size:12px}
-.sw input{width:auto;transform:scale(1.3)}
-.empty{text-align:center;color:var(--muted);padding:40px 0}
-.note{font-size:12px;color:var(--muted);margin-top:6px}
-.pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--muted);margin-left:6px}
-#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#16313a;color:#fff;padding:9px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90%}
-#toast.show{opacity:.95}
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:30}
-#modal[hidden]{display:none}
-#mbox{background:var(--card);width:100%;max-width:640px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
-#mbox h3{margin:0 0 8px;font-size:16px}
-#mbox .row button{flex:1}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:16px;line-height:1.5}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+header.top{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;
+  padding:calc(18px + env(safe-area-inset-top)) 0 26px;border-radius:0 0 28px 28px}
+.hello{display:flex;align-items:center;gap:12px}
+.avatar{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.25);object-fit:cover;
+  display:grid;place-items:center;font-size:22px;flex:none}
+.hello h1{margin:0;font-size:20px;line-height:1.25}
+.hello p{margin:2px 0 0;opacity:.92;font-size:14px}
+main{margin-top:-14px}
+section.view{display:none}
+section.view.on{display:block}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin:12px 0}
+.h2{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--muted);margin:22px 4px 6px;display:flex;align-items:center;gap:6px}
+.h2 .n{background:var(--chip);border-radius:999px;padding:0 8px;font-size:12px;color:var(--primary-d)}
+.task{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 14px 12px;margin:10px 0;border-left:4px solid var(--primary)}
+.task.overdue{border-left-color:var(--warn)}
+.task.pending{border-left-color:#a78bfa}
+.task h3{margin:0 0 6px;font-size:16px;line-height:1.35;word-break:break-word}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--chip);border-radius:999px;padding:2px 10px;font-size:12.5px;color:var(--muted);word-break:break-all}
+.chip.warn{color:var(--warn);background:rgba(217,119,6,.12)}
+.actions{display:flex;gap:8px;margin-top:12px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 14px;font-weight:600;cursor:pointer;min-height:42px}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.blue{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.danger{color:var(--danger);border-color:rgba(225,29,72,.35)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.55;pointer-events:none}
+.actions .btn{flex:1}
+.empty{text-align:center;color:var(--muted);padding:34px 12px}
+.empty .big{font-size:40px}
+.batch{border:2px dashed #c4b5fd;border-radius:var(--radius);padding:8px 10px 12px;margin:12px 0;background:rgba(167,139,250,.07)}
+.batch .t{font-weight:700;font-size:14px;margin:6px 4px}
+.batch .task{box-shadow:none;border:1px solid var(--line);border-left:4px solid #a78bfa}
+.adjust{display:none;margin-top:10px;gap:8px}
+.adjust.on{display:flex}
+.adjust input{flex:1}
+input,select,textarea{width:100%;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 12px;min-height:44px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(14,165,233,.18)}
+textarea{min-height:120px;resize:vertical}
+label.f{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px;font-weight:600}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--chip);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:0;background:transparent;border-radius:9px;padding:9px;font-weight:700;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--card);color:var(--primary-d);box-shadow:0 1px 4px rgba(15,23,42,.12)}
+.examples{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.examples button{border:1px dashed var(--line);background:transparent;border-radius:999px;padding:5px 11px;font-size:13px;color:var(--muted);cursor:pointer}
+.voice{display:flex;gap:10px;align-items:center;margin-top:12px}
+.mic{width:54px;height:54px;border-radius:50%;border:0;background:var(--primary);color:#fff;font-size:24px;cursor:pointer;flex:none;position:relative}
+.mic.rec{background:var(--danger)}
+.mic.rec::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--danger);animation:pulse 1.2s infinite}
+@keyframes pulse{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+.voice .tip{font-size:13px;color:var(--muted)}
+.big-num{font-size:34px;font-weight:800;letter-spacing:-.02em}
+.mnav{display:flex;align-items:center;justify-content:space-between}
+.mnav button{border:0;background:var(--chip);width:40px;height:40px;border-radius:12px;font-size:18px;cursor:pointer}
+.bar{margin:10px 0}
+.bar .l{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:3px}
+.bar .tr{height:9px;background:var(--chip);border-radius:99px;overflow:hidden}
+.bar .tr i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:99px}
+.li{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14.5px}
+.li:first-child{border-top:0}
+.li small{color:var(--muted)}
+.set{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-top:1px solid var(--line)}
+.set:first-child{border-top:0}
+.set b{display:block;font-size:15px}
+.set small{color:var(--muted);display:block;font-size:12.5px;line-height:1.4}
+.set select{width:auto;min-width:112px}
+.sw{position:relative;width:52px;height:30px;flex:none}
+.sw input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:2}
+.sw i{position:absolute;inset:0;background:#cbd5e1;border-radius:99px;transition:.2s}
+.sw i::after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.sw input:checked + i{background:var(--accent)}
+.sw input:checked + i::after{transform:translateX(22px)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);z-index:20}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{border:0;background:transparent;padding:9px 0 8px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+nav.tabs button .ic{font-size:21px;line-height:1.2}
+nav.tabs button.on{color:var(--primary-d)}
+.overlay{position:fixed;inset:0;background:rgba(2,6,23,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.overlay.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));animation:up .22s ease}
+@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+.sheet h4{margin:0 0 4px;font-size:17px}
+.sheet p{margin:0 0 12px;color:var(--muted);font-size:14px}
+.qrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
+  background:#0f172a;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:80;max-width:88vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+#toast.err{background:var(--danger)}
+.fatal{max-width:420px;margin:18vh auto 0;text-align:center;padding:0 24px}
+.fatal .big{font-size:48px}
+.skel{height:84px;border-radius:var(--radius);background:linear-gradient(90deg,var(--chip),var(--card),var(--chip));background-size:200% 100%;animation:sk 1.3s infinite;margin:12px 0}
+@keyframes sk{to{background-position:-200% 0}}
+.note{font-size:13px;color:var(--muted);line-height:1.5}
+.sp{height:8px}
+a{color:var(--primary-d)}
 </style>
 </head>
 <body>
-<header><h1>🕰️ Chronos</h1><span id="who"></span></header>
-<main id="view"><div class="empty">載入中…</div></main>
-<nav id="tabs">
-  <button data-tab="todo" class="on"><b>📋</b>待辦</button>
-  <button data-tab="add"><b>✍️</b>新增</button>
-  <button data-tab="spend"><b>💰</b>花費</button>
-  <button data-tab="set"><b>⚙️</b>設定</button>
-</nav>
-<div id="toast"></div>
-<div id="modal" hidden><div id="mbox"></div></div>
+<div id="boot"><div class="wrap"><div class="skel" style="margin-top:80px"></div><div class="skel"></div><div class="skel"></div></div></div>
+
+<div id="app" hidden>
+  <header class="top"><div class="wrap">
+    <div class="hello">
+      <div class="avatar" id="avatar">⏳</div>
+      <div><h1 id="hi">嗨！</h1><p id="sub"></p></div>
+    </div>
+  </div></header>
+
+  <main class="wrap">
+    <!-- 清單 -->
+    <section class="view" id="v-list"></section>
+
+    <!-- 新增 -->
+    <section class="view" id="v-add">
+      <div class="card">
+        <div class="seg" id="addSeg"><button data-mode="smart" class="on">✨ 智慧輸入</button><button data-mode="form">📝 表單</button></div>
+
+        <div id="addSmart">
+          <div id="aiOffNote" class="note" style="display:none;margin-top:12px">你已關閉「智慧解析」，這裡暫時不能用。想用的話到「設定」打開，或直接用表單新增。</div>
+          <div id="smartBox">
+            <label class="f" for="smartText">想做什麼？用講的或打字都可以</label>
+            <textarea id="smartText" maxlength="800" placeholder="例如：明天下午三點開會，後天去全聯買電池大概 100 元"></textarea>
+            <div class="note" style="display:flex;justify-content:space-between;margin-top:4px"><span id="aiHint">送出前會遮蔽手機、身分證、Email、卡號</span><span id="cnt">0/800</span></div>
+            <div class="examples" id="examples">
+              <button type="button">明天下午三點開會</button>
+              <button type="button">週五前交報告，預估 3 小時</button>
+              <button type="button">今晚買晚餐 150 元</button>
+            </div>
+            <div class="voice">
+              <button class="mic" id="mic" type="button" aria-label="錄音">🎤</button>
+              <div class="tip" id="micTip">按一下開始錄音，再按一下送出（最長 60 秒）</div>
+            </div>
+            <button class="btn blue block" id="smartGo" style="margin-top:14px">整理成待辦</button>
+          </div>
+        </div>
+
+        <div id="addForm" hidden>
+          <label class="f" for="fName">任務名稱</label>
+          <input id="fName" maxlength="80" placeholder="例如：交報告">
+          <div class="row2">
+            <div><label class="f" for="fDate">日期</label><input id="fDate" type="date"></div>
+            <div><label class="f" for="fTime">時間（可不填）</label><input id="fTime" type="time"></div>
+          </div>
+          <div class="row2">
+            <div><label class="f" for="fHours">預估時數</label><input id="fHours" type="number" min="0.25" max="24" step="0.25" inputmode="decimal"></div>
+            <div><label class="f" for="fBudget">預算（可不填）</label><input id="fBudget" type="number" min="0" step="1" inputmode="decimal" placeholder="0"></div>
+          </div>
+          <label class="f" for="fLoc">地點（可不填）</label>
+          <input id="fLoc" maxlength="80">
+          <label class="f" for="fCat">類別</label>
+          <input id="fCat" list="cats" maxlength="20" placeholder="工作、生活、購物…">
+          <datalist id="cats"><option value="工作"><option value="生活"><option value="購物"><option value="學習"><option value="健康"><option value="餐飲"><option value="交通"></datalist>
+          <button class="btn blue block" id="formGo" style="margin-top:16px">直接加入清單</button>
+          <p class="note">表單不經過 AI，也不佔每日智慧解析次數。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 花費 -->
+    <section class="view" id="v-expense"></section>
+
+    <!-- 設定 -->
+    <section class="view" id="v-settings"></section>
+  </main>
+
+  <nav class="tabs"><div class="in">
+    <button data-tab="list" class="on"><span class="ic">📋</span>清單</button>
+    <button data-tab="add"><span class="ic">➕</span>新增</button>
+    <button data-tab="expense"><span class="ic">💰</span>花費</button>
+    <button data-tab="settings"><span class="ic">⚙️</span>設定</button>
+  </div></nav>
+</div>
+
+<!-- 完成 -->
+<div class="overlay" id="ovDone"><div class="sheet">
+  <h4 id="dTitle">完成了！</h4><p>這次實際花了多少？沒花錢可以直接按「沒花錢」。</p>
+  <input id="dAmt" type="number" inputmode="decimal" min="0" step="any" placeholder="輸入金額">
+  <div class="qrow" id="dQuick"></div>
+  <div class="actions"><button class="btn ghost" data-close>取消</button><button class="btn primary" id="dOk">確認完成</button></div>
+</div></div>
+
+<!-- 日曆 -->
+<div class="overlay" id="ovCal"><div class="sheet">
+  <h4>加入我的日曆</h4><p id="cTitle"></p>
+  <button class="btn blue block" id="cG">📅 加入 Google 日曆</button>
+  <div class="sp"></div>
+  <button class="btn block" id="cI">🍎 iPhone／其他日曆（.ics，含提醒）</button>
+  <p class="note" style="margin-top:12px">Google 日曆連結會用你日曆的預設提醒；.ics 檔會依「設定」裡的提醒時間加上提醒。</p>
+  <button class="btn ghost block" data-close>關閉</button>
+</div></div>
+
+<!-- 刪除 -->
+<div class="overlay" id="ovDel"><div class="sheet">
+  <h4>刪除我的所有資料</h4><p>任務、花費紀錄和設定都會被清除，無法復原。請輸入「刪除」兩個字確認。</p>
+  <input id="delTxt" placeholder="刪除" autocomplete="off">
+  <div class="actions" style="margin-top:12px"><button class="btn ghost" data-close>先不要</button><button class="btn danger" id="delOk">確定刪除</button></div>
+</div></div>
+
+<div id="toast" role="status"></div>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-/* ====== 部署前只需要改這一行：貼上你的 GAS 網頁應用程式網址（結尾是 /exec）====== */
-const CFG = {
+/* ===== 設定：部署後只需要改 API_URL ===== */
+const CFG = Object.assign({
   LIFF_ID: "2011960049-CkNkfVIu",
-  GAS_URL: "https://script.google.com/macros/s/AKfycbzsYVUBdN9ZqWXTRFvlbLCoPzupfQwJfi-sLWEtO-5oj4YseXkmecIPl57ptiF32A/exec"
-};
+  API_URL: "貼上你的 GAS 網頁應用程式網址（結尾是 /exec）"
+}, window.CHRONOS_CONFIG || {});
 
-const $ = (s) => document.querySelector(s);
-const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const money = (n) => "$" + Number(n || 0).toLocaleString("en-US");
-const SLOT = { morning: "上午", afternoon: "下午", evening: "晚上", any: "不指定" };
-const S = { tab: "todo", data: null, preview: null, busy: false };
+/* ===== 小工具 ===== */
+const $ = (s, el) => (el || document).querySelector(s);
+const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const money = n => "$" + (Math.round((Number(n) || 0) * 100) / 100).toLocaleString("en-US");
+const S = { me: null, tasks: [], done: [], today: "", tab: "list", addMode: "smart", ym: "", exp: null, busy: false, dialogTask: null };
+const WD = ["日", "一", "二", "三", "四", "五", "六"];
 
-/* ---------- 基礎工具 ---------- */
-let toastTimer;
-function toast(msg) {
-  const el = $("#toast");
-  el.textContent = msg;
-  el.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+function toast(msg, err) {
+  const t = $("#toast"); t.textContent = msg; t.className = "on" + (err ? " err" : "");
+  clearTimeout(toast._t); toast._t = setTimeout(() => { t.className = ""; }, 2600);
+}
+function addDaysStr(s, n) { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function dayLabel(s) {
+  const d = new Date(s + "T00:00:00Z");
+  const base = (d.getUTCMonth() + 1) + "/" + d.getUTCDate() + "（" + WD[d.getUTCDay()] + "）";
+  if (s === S.today) return "今天 · " + base;
+  if (s === addDaysStr(S.today, 1)) return "明天 · " + base;
+  if (s === addDaysStr(S.today, 2)) return "後天 · " + base;
+  return base;
+}
+function curYm() { const d = new Date(Date.now() + 8 * 3600000); return d.toISOString().slice(0, 7); }
+function shiftYm(ym, n) { const [y, m] = ym.split("-").map(Number); const d = new Date(Date.UTC(y, m - 1 + n, 1)); return d.toISOString().slice(0, 7); }
+
+function fatal(msg, canReload) {
+  $("#boot").hidden = true; $("#app").hidden = true;
+  document.body.insertAdjacentHTML("beforeend",
+    '<div class="fatal"><div class="big">🕰️</div><h2>' + esc(msg.title || "出了點問題") + "</h2><p class=\"note\">" + esc(msg.body || msg) + "</p>" +
+    (canReload ? '<button class="btn blue" onclick="location.reload()">重新載入</button>' : "") + "</div>");
 }
 
-function modal({ title, body, input, ok, cancel, danger }) {
-  return new Promise((resolve) => {
-    const box = $("#mbox");
-    box.innerHTML =
-      "<h3>" + esc(title) + "</h3>" + (body ? "<div class='m'>" + esc(body) + "</div>" : "") +
-      (input ? "<input id='minput' type='" + (input.type || "text") + "' inputmode='" + (input.mode || "decimal") + "' value='" + esc(input.value || "") + "' placeholder='" + esc(input.placeholder || "") + "' style='margin-top:10px'>" : "") +
-      "<div class='row'><button class='ghost' id='mno'>" + esc(cancel || "取消") + "</button>" +
-      "<button class='" + (danger ? "danger" : "pri") + "' id='myes'>" + esc(ok || "確定") + "</button></div>";
-    const m = $("#modal");
-    m.hidden = false;
-    const done = (v) => { m.hidden = true; resolve(v); };
-    $("#mno").onclick = () => done(null);
-    $("#myes").onclick = () => done(input ? $("#minput").value : true);
-    m.onclick = (e) => { if (e.target === m) done(null); };
-    if (input) setTimeout(() => $("#minput").focus(), 50);
-  });
-}
-
-async function api(name, extra) {
-  const idToken = liff.getIDToken();
-  if (!idToken) { liff.login(); throw new Error("login"); }
-  const res = await fetch(CFG.GAS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(Object.assign({ api: name, idToken: idToken }, extra || {}))
-  });
+/* ===== API ===== */
+async function api(act, data) {
+  if (!CFG.API_URL || /^貼上/.test(CFG.API_URL)) throw new Error("尚未設定 API_URL（請編輯 index.html 最上面的 CFG）");
+  const res = await fetch(CFG.API_URL, { method: "POST", body: JSON.stringify(Object.assign({ act: act, idToken: liff.getIDToken() }, data || {})) });
   const j = await res.json();
-  if (!j.ok && j.error === "AUTH") {
-    try { liff.logout(); } catch (e) {}
-    liff.login();
-    throw new Error("auth");
-  }
-  if (!j.ok) throw new Error(j.message || "操作失敗，請再試一次");
+  if (j && j.code === "AUTH") { authExpired(); throw new Error("登入逾時"); }
   return j;
 }
-
-async function refresh() {
-  S.data = await api("boot");
-  render();
+function authExpired() {
+  try { if (!liff.isInClient()) { liff.logout(); liff.login({ redirectUri: location.href.split("?")[0] }); return; } } catch (e) { /* ignore */ }
+  fatal({ title: "登入逾時", body: "請關閉這個視窗，再從 LINE 選單重新開啟控制台。" }, true);
 }
-
-// 執行一個會改動資料的操作：顯示處理中、完成後重新載入
-async function run(name, extra, okMsg, after) {
+async function run(fn, okMsg) {
   if (S.busy) return;
-  S.busy = true;
-  toast("處理中…");
+  S.busy = true; document.body.style.cursor = "progress";
   try {
-    const r = await api(name, extra);
-    if (okMsg) toast(okMsg);
-    if (after) after(r);
-    await refresh();
-  } catch (e) {
-    if (e.message !== "login" && e.message !== "auth") toast(e.message);
-  } finally {
-    S.busy = false;
-  }
+    const j = await fn();
+    if (j && j.snap) applySnap(j.snap);
+    if (j && j.ok === false) { toast(j.error || "操作失敗", true); return j; }
+    if (okMsg) toast(typeof okMsg === "function" ? okMsg(j) : okMsg);
+    return j;
+  } catch (e) { toast(e.message || "網路異常，請稍後再試", true); }
+  finally { S.busy = false; document.body.style.cursor = ""; }
 }
+function applySnap(s) { S.tasks = s.tasks; S.done = s.done; S.today = s.today; renderList(); renderHeader(); }
 
-/* ---------- 畫面 ---------- */
-function render() {
-  const d = S.data;
-  if (!d) return;
-  $("#who").textContent = d.user.name || "";
-  document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === S.tab));
-  const views = { todo: viewTodo, add: viewAdd, spend: viewSpend, set: viewSet };
-  $("#view").innerHTML = views[S.tab](d);
+/* ===== 畫面 ===== */
+function renderHeader() {
+  const left = S.tasks.filter(t => t.status === "已排程" && t.due <= S.today).length;
+  const pend = new Set(S.tasks.filter(t => t.status === "待審核").map(t => t.batch)).size;
+  $("#sub").textContent = pend ? "有 " + pend + " 批待審核，確認後就能排程" : left ? "今天還有 " + left + " 項待辦" : "今天沒有待辦，輕鬆一下 ☕";
 }
-
-function taskMeta(t) {
-  const parts = [];
-  if (t.location && t.location !== "無") parts.push("📍" + t.location);
-  parts.push(t.budget > 0 ? "預算 " + money(t.budget) : "無預算");
-  return parts.join("　");
+function chips(t) {
+  let h = '<span class="chip' + (t.overdue ? " warn" : "") + '">🕒 ' + (t.overdue ? "逾期 · " : "") + esc(t.when) + "</span>";
+  if (t.location && t.location !== "無") h += '<span class="chip">📍 ' + esc(t.location) + "</span>";
+  if (t.budget > 0) h += '<span class="chip">💰 預算 ' + money(t.budget) + "</span>";
+  if (t.category && t.category !== "未分類") h += '<span class="chip">🏷 ' + esc(t.category) + "</span>";
+  return h;
 }
-
-function viewTodo(d) {
-  const today = new Date().toISOString().slice(0, 10);
-  const pend = d.tasks.filter((t) => t.status === "待審核");
-  const sch = d.tasks.filter((t) => t.status === "已排程").sort((a, b) => (a.startMs || 9e15) - (b.startMs || 9e15));
-  const done = d.tasks.filter((t) => t.status === "已完成" || t.status === "已記帳");
+function taskCard(t, pending) {
+  return '<article class="task ' + (pending ? "pending" : t.overdue ? "overdue" : "") + '" data-id="' + esc(t.id) + '"><h3>' + esc(t.name) + '</h3><div class="meta">' + chips(t) + "</div>" +
+    (pending ? "" : '<div class="actions"><button class="btn primary" data-act="done">✅ 完成</button><button class="btn" data-act="cal">📅 日曆</button><button class="btn ghost" data-act="cancel">取消</button></div>') + "</article>";
+}
+function renderList() {
+  const el = $("#v-list");
+  const pending = S.tasks.filter(t => t.status === "待審核");
+  const sched = S.tasks.filter(t => t.status === "已排程");
   let h = "";
-
-  if (pend.length) {
-    const byB = {};
-    pend.forEach((t) => (byB[t.batch] = byB[t.batch] || []).push(t));
-    h += "<h2>等你確認</h2>";
-    Object.keys(byB).forEach((b) => {
-      h += "<div class='card'>" + byB[b].map((t) => "<div style='margin-bottom:8px'><div class='t'>" + esc(t.name) + "</div><div class='m'>" + esc(t.due ? "截止 " + t.due : "未訂日期") + "｜" + esc(taskMeta(t)) + "</div></div>").join("") +
-        "<div class='row'><button class='pri' data-act='approve' data-b='" + esc(b) + "'>確認無誤</button><button class='ghost' data-act='cancelBatch' data-b='" + esc(b) + "'>全部取消</button></div></div>";
-    });
-  }
-
-  h += "<h2>進行中（" + sch.length + "）</h2>";
-  if (!sch.length) h += "<div class='empty'>目前沒有待辦 🎉<br>到「新增」分頁加一筆吧</div>";
-  sch.forEach((t) => {
-    const od = t.due && t.due < today;
-    h += "<div class='card'><div class='t'>" + esc(t.name) + "</div>" +
-      "<div class='m " + (od ? "od" : "") + "'>" + (od ? "⚠ 逾期 " : "") + esc(t.when || "") + "</div>" +
-      "<div class='m'>" + esc(taskMeta(t)) + "</div>" +
-      "<div class='row'><button class='pri' data-act='done' data-id='" + esc(t.id) + "'>完成</button>" +
-      (t.cal ? "<button data-act='cal' data-id='" + esc(t.id) + "'>加入日曆</button>" : "") +
-      "<button class='ghost' data-act='cancel' data-id='" + esc(t.id) + "'>取消</button></div></div>";
+  const batches = {};
+  pending.forEach(t => { (batches[t.batch] = batches[t.batch] || []).push(t); });
+  Object.keys(batches).forEach(b => {
+    h += '<div class="batch" data-batch="' + esc(b) + '"><div class="t">🟣 待審核 · ' + batches[b].length + " 項</div>" +
+      batches[b].map(t => taskCard(t, true)).join("") +
+      '<div class="actions"><button class="btn primary" data-act="approve">確認無誤</button><button class="btn" data-act="adjust">調整</button><button class="btn danger" data-act="cancelBatch">全部取消</button></div>' +
+      '<div class="adjust"><input maxlength="300" placeholder="例如：電池改後天買、報告移到最前面"><button class="btn blue" data-act="adjustGo">送出</button></div></div>';
   });
-
-  if (done.length) {
-    h += "<h2>最近完成</h2>";
-    done.forEach((t) => {
-      h += "<div class='card'><div class='t'>✅ " + esc(t.name) + (t.actual > 0 ? "<span class='pill'>" + money(t.actual) + "</span>" : "") + "</div></div>";
-    });
+  const overdue = sched.filter(t => t.overdue);
+  if (overdue.length) h += '<div class="h2">⚠ 已逾期<span class="n">' + overdue.length + "</span></div>" + overdue.map(t => taskCard(t)).join("");
+  const rest = sched.filter(t => !t.overdue);
+  const days = {};
+  rest.forEach(t => { (days[t.due] = days[t.due] || []).push(t); });
+  Object.keys(days).sort().forEach(d => { h += '<div class="h2">' + esc(dayLabel(d)) + '<span class="n">' + days[d].length + "</span></div>" + days[d].map(t => taskCard(t)).join(""); });
+  if (!pending.length && !sched.length) h += '<div class="empty"><div class="big">🌤️</div><p>目前沒有待辦。<br>到「新增」丟一句話給我吧！</p><button class="btn blue" data-tab-go="add">新增待辦</button></div>';
+  if (S.done.length) {
+    h += '<div class="h2">最近完成</div><div class="card" style="padding:4px 14px">' + S.done.slice(0, 8).map(t =>
+      '<div class="li"><span>✔ ' + esc(t.name) + '</span><small>' + (t.actual ? money(t.actual) : "—") + "</small></div>").join("") + "</div>";
   }
-  return h;
+  el.innerHTML = h;
 }
 
-function viewAdd(d) {
-  let h = "";
-  if (S.preview && S.preview.tasks.length) {
-    const p = S.preview;
-    h += "<h2>解析結果</h2><div class='card'>" + p.tasks.map((t, i) =>
-      "<div style='margin-bottom:8px'><div class='t'>" + (i + 1) + ". " + esc(t.taskName) + "</div><div class='m'>" + esc(t.dueDate ? "截止 " + t.dueDate : "未訂日期") + "｜" + t.estimatedHours + "h｜" + esc(t.budget > 0 ? "預算 " + money(t.budget) : "無預算") + "</div></div>").join("") +
-      "<div class='row'><button class='pri' data-act='pvOk'>確認加入</button><button class='ghost' data-act='pvNo'>取消</button></div>" +
-      "<div class='note'>想調整內容？取消後修改文字再解析一次，或到 LINE 聊天室按「重新調整」。</div></div>";
-  }
-
-  h += "<h2>一句話新增（智慧解析）</h2><div class='card'>";
-  if (d.user.ai) {
-    h += "<textarea id='aiText' maxlength='500' placeholder='例如：明天下午去郵局寄包裹，週五前買電池 150 元'></textarea>" +
-      "<div class='row'><button class='pri' data-act='parse'>解析</button></div>" +
-      "<div class='note'>文字會送到 Google Gemini 解析，請勿輸入敏感資料。今日已用 " + d.limits.used + " / " + d.limits.daily + " 次。語音請直接在 LINE 聊天室傳語音訊息。</div>";
-  } else {
-    h += "<div class='m'>你已關閉智慧解析。可用下方表單新增，或到「設定」重新開啟。</div>";
-  }
-  h += "</div>";
-
-  h += "<h2>用表單新增（不經過 AI）</h2><div class='card'>" +
-    "<label class='f'>待辦名稱</label><input id='f_name' maxlength='80' placeholder='例如：買電池'>" +
-    "<div class='g2'><div><label class='f'>日期</label><input id='f_due' type='date'></div>" +
-    "<div><label class='f'>時段</label><select id='f_slot'>" + Object.keys(SLOT).map((k) => "<option value='" + k + "'" + (k === d.user.slot ? " selected" : "") + ">" + SLOT[k] + "</option>").join("") + "</select></div></div>" +
-    "<div class='g2'><div><label class='f'>預估時數</label><input id='f_hours' type='number' step='0.25' min='0.25' max='12' value='1'></div>" +
-    "<div><label class='f'>預算（元）</label><input id='f_budget' type='number' min='0' value='0'></div></div>" +
-    "<label class='f'>地點（選填）</label><input id='f_loc' maxlength='60'>" +
-    "<div class='row'><button class='pri' data-act='addForm'>加入待辦</button></div></div>";
-  return h;
+async function loadExpenses() {
+  const el = $("#v-expense");
+  el.innerHTML = '<div class="skel"></div>';
+  const j = await api("expenses", { ym: S.ym });
+  if (!j.ok) { el.innerHTML = '<div class="empty">' + esc(j.error || "載入失敗") + "</div>"; return; }
+  const s = j.summary; S.exp = s;
+  const max = Math.max.apply(null, s.byCat.map(c => c.total).concat([1]));
+  const [y, m] = s.ym.split("-");
+  let h = '<div class="card"><div class="mnav"><button data-ym="-1" aria-label="上個月">‹</button><b>' + y + " 年 " + parseInt(m, 10) + ' 月</b><button data-ym="1" aria-label="下個月">›</button></div>' +
+    '<div style="margin-top:12px" class="note">本月花費</div><div class="big-num">' + money(s.total) + '</div><div class="note">共 ' + s.count + " 筆</div></div>";
+  if (s.byCat.length) {
+    h += '<div class="card"><b>各類別</b>' + s.byCat.map(c => '<div class="bar"><div class="l"><span>' + esc(c.cat) + "</span><span>" + money(c.total) + '</span></div><div class="tr"><i style="width:' + Math.max(4, Math.round(c.total / max * 100)) + '%"></i></div></div>').join("") + "</div>";
+    h += '<div class="card" style="padding:4px 14px"><b style="display:block;padding:10px 0 2px">明細</b>' + s.items.map(i => '<div class="li"><span>' + esc(i.name) + '<br><small>' + esc(i.date) + " · " + esc(i.cat) + "</small></span><b>" + money(i.amount) + "</b></div>").join("") + "</div>";
+  } else h += '<div class="empty"><div class="big">🧾</div><p>這個月還沒有花費紀錄。<br>完成任務時輸入實際金額就會自動記帳。</p></div>';
+  el.innerHTML = h;
 }
 
-function viewSpend(d) {
-  const s = d.spend;
-  let h = "<h2>本月花費</h2><div class='card'><div class='big'>" + money(s.total) + "</div><div class='m'>共 " + s.count + " 筆</div></div>";
-  if (!s.items.length) return h + "<div class='empty'>這個月還沒有記帳紀錄</div>";
-  h += "<h2>明細</h2>";
-  s.items.forEach((it) => {
-    h += "<div class='card' style='display:flex;justify-content:space-between;gap:10px'><div><div class='t'>" + esc(it.name) + "</div><div class='m'>" + esc(it.date) + "</div></div><div class='t'>" + money(it.amount) + "</div></div>";
-  });
-  return h;
+function sel(id, opts, cur) { return '<select id="' + id + '">' + opts.map(o => '<option value="' + o[0] + '"' + (String(o[0]) === String(cur) ? " selected" : "") + ">" + o[1] + "</option>").join("") + "</select>"; }
+function renderSettings() {
+  const me = S.me, s = me.settings;
+  const feed = me.feedUrl, web = feed.replace(/^https:/, "webcal:");
+  const gcalSub = "https://calendar.google.com/calendar/r?cid=" + encodeURIComponent(web);
+  const hours = []; for (let i = 6; i <= 22; i++) hours.push([i, (i < 10 ? "0" : "") + i + ":00"]);
+  $("#v-settings").innerHTML =
+    '<div class="card"><b>操作偏好</b>' +
+    '<div class="set"><div><b>自動確認</b><small>解析完直接排程，不再先給我審核</small></div><label class="sw"><input type="checkbox" id="sAuto"' + (s.auto ? " checked" : "") + "><i></i></label></div>" +
+    '<div class="set"><div><b>智慧解析（AI）</b><small>關閉後，你的內容不會送到 AI；新增改用表單</small></div><label class="sw"><input type="checkbox" id="sAi"' + (s.ai ? " checked" : "") + "><i></i></label></div>" +
+    '<div class="set"><div><b>日曆提醒</b><small>用 .ics 加入日曆時帶入</small></div>' + sel("sRemind", [[0, "不提醒"], [10, "前 10 分鐘"], [30, "前 30 分鐘"], [60, "前 1 小時"], [1440, "前一天"]], s.remind) + "</div>" +
+    '<div class="set"><div><b>預設時數</b><small>表單沒填時使用</small></div>' + sel("sHours", [[0.5, "0.5 小時"], [1, "1 小時"], [1.5, "1.5 小時"], [2, "2 小時"], [3, "3 小時"], [4, "4 小時"]], s.defHours) + "</div>" +
+    '<div class="set"><div><b>預設開始時間</b><small>沒指定時段與時間時使用</small></div>' + sel("sStart", hours, s.defStart) + "</div></div>" +
+
+    '<div class="card"><b>日曆自動訂閱 <span class="chip">實驗性</span></b><p class="note">訂閱一次，之後排程的事項會自動出現在你的日曆。但 Google 日曆更新訂閱常會延遲數小時，要即時請用任務卡上的「加入日曆」。這個網址等同你的專屬金鑰，請不要分享給別人。</p>' +
+    '<div class="qrow"><button class="btn" id="subCopy">複製訂閱網址</button><button class="btn" data-open="' + esc(gcalSub) + '">加到 Google 日曆</button><button class="btn" data-open="' + esc(web) + '">iPhone 訂閱</button></div></div>' +
+
+    '<div class="card"><b>像 App 一樣放在桌面</b><p class="note">用手機的 Safari（iPhone）或 Chrome（Android）打開 <b>' + esc(location.origin + location.pathname) + '</b>，點「分享」→「加入主畫面」。第一次需要用 LINE 帳號登入一次。</p></div>' +
+
+    '<div class="card"><b>隱私與資料</b><p class="note">智慧解析會把你輸入的文字或語音送到 Google Gemini 處理，送出前會先遮蔽手機、身分證、Email、卡號；免費方案的資料可能被 Google 用於改善服務，請避免輸入敏感內容。已完成的任務與花費明細會在一段時間後自動清除，只留下金額統計。</p>' +
+    '<button class="btn danger block" id="delBtn">刪除我的所有資料</button></div>' +
+    '<p class="note" style="text-align:center">' + esc(me.name || "") + (me.admin ? " · 管理者" : "") + '</p>' +
+    '<div class="qrow" style="justify-content:center">' + (liff.isInClient() ? '<button class="btn ghost" id="closeWin">關閉視窗，回到聊天</button>' : '<button class="btn ghost" id="logout">登出</button>') + "</div>";
+}
+let saveTimer = null;
+function saveSettings() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    const settings = { auto: $("#sAuto").checked, ai: $("#sAi").checked, remind: +$("#sRemind").value, defHours: +$("#sHours").value, defStart: +$("#sStart").value };
+    const j = await run(() => api("saveSettings", { settings: settings }), "已儲存");
+    if (j && j.me) { S.me = j.me; syncAiUi(); }
+  }, 350);
+}
+function syncAiUi() {
+  const on = S.me.settings.ai && S.me.aiAvailable;
+  $("#smartBox").style.display = on ? "" : "none";
+  $("#aiOffNote").style.display = on ? "none" : "";
+  if (!on) $("#aiOffNote").textContent = S.me.aiAvailable ? "你已關閉「智慧解析」，這裡暫時不能用。想用的話到「設定」打開，或直接用表單新增。" : "智慧解析目前暫停中，請先用表單新增。";
+  if (!on && S.addMode === "smart") setAddMode(S.addMode);
 }
 
-function viewSet(d) {
-  const u = d.user;
-  let h = "<h2>偏好</h2><div class='card'>" +
-    "<label class='sw'><span>自動確認<small>AI 解析完直接加入待辦，不再問我</small></span><input type='checkbox' id='s_auto' data-set " + (u.auto ? "checked" : "") + "></label>" +
-    "<label class='sw'><span>智慧解析（AI）<small>關閉後只能用選單與表單新增</small></span><input type='checkbox' id='s_ai' data-set " + (u.ai ? "checked" : "") + "></label>" +
-    "<label class='f'>預設時段（沒指定時段的待辦會排在這個時間）</label><select id='s_slot' data-set>" +
-    Object.keys(SLOT).map((k) => "<option value='" + k + "'" + (k === u.slot ? " selected" : "") + ">" + SLOT[k] + "</option>").join("") + "</select></div>";
+/* ===== 分頁 ===== */
+function go(tab) {
+  S.tab = tab;
+  $$("section.view").forEach(v => v.classList.toggle("on", v.id === "v-" + tab));
+  $$("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  if (tab === "expense") loadExpenses();
+  if (tab === "settings") renderSettings();
+  window.scrollTo({ top: 0 });
+}
+function setAddMode(m) {
+  S.addMode = m;
+  $$("#addSeg button").forEach(b => b.classList.toggle("on", b.dataset.mode === m));
+  $("#addSmart").hidden = m !== "smart"; $("#addForm").hidden = m !== "form";
+}
 
-  h += "<h2>日曆訂閱（實驗性）</h2><div class='card'>";
-  if (d.feedUrl) {
-    h += "<div class='m'>把這個連結加到你的行事曆 App，之後待辦會自動出現（含 30 分鐘前提醒）。</div>" +
-      "<input id='feed' readonly value='" + esc(d.feedUrl) + "' style='margin-top:8px'>" +
-      "<div class='row'><button data-act='copyFeed'>複製連結</button><button class='ghost' data-act='resetFeed'>重設連結</button></div>" +
-      "<div class='note'>Google 日曆「從網址新增」常有數小時的更新延遲，且不一定接受這類連結；Apple 日曆通常較順。若失敗，請改用待辦卡片上的「加入日曆」。連結等同你的專屬密碼，請勿分享。</div>";
-  } else {
-    h += "<div class='m'>管理者尚未設定 WEBAPP_URL，暫時無法提供訂閱連結。</div>";
+/* ===== 錄音（輸出 WAV，Gemini 一定吃得下，也避開各瀏覽器格式差異） ===== */
+const Rec = {
+  active: false, chunks: [], t0: 0, timer: null,
+  async start() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("這個環境不支援錄音，請改用打字，或在 LINE 聊天室直接傳語音訊息。");
+    this.stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+    const AC = window.AudioContext || window.webkitAudioContext;
+    this.ctx = new AC();
+    if (this.ctx.state === "suspended") await this.ctx.resume();
+    this.src = this.ctx.createMediaStreamSource(this.stream);
+    this.node = this.ctx.createScriptProcessor(4096, 1, 1);
+    this.chunks = [];
+    this.node.onaudioprocess = e => { if (this.active) this.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); };
+    this.src.connect(this.node); this.node.connect(this.ctx.destination);
+    this.active = true; this.t0 = Date.now();
+  },
+  async stop() {
+    this.active = false;
+    try { this.node.disconnect(); this.src.disconnect(); } catch (e) { /* ignore */ }
+    this.stream.getTracks().forEach(t => t.stop());
+    const rate = this.ctx.sampleRate; await this.ctx.close();
+    return this.toWav(rate);
+  },
+  toWav(rate) {
+    let len = 0; this.chunks.forEach(c => { len += c.length; });
+    const all = new Float32Array(len); let o = 0; this.chunks.forEach(c => { all.set(c, o); o += c.length; });
+    const target = 16000, ratio = rate / target, n = Math.floor(len / ratio);
+    const pcm = new Int16Array(n);
+    for (let i = 0; i < n; i++) {
+      const a = Math.floor(i * ratio), b = Math.max(a + 1, Math.floor((i + 1) * ratio));
+      let sum = 0; for (let k = a; k < b && k < len; k++) sum += all[k];
+      const v = Math.max(-1, Math.min(1, sum / (b - a)));
+      pcm[i] = v < 0 ? v * 0x8000 : v * 0x7fff;
+    }
+    const buf = new ArrayBuffer(44 + pcm.length * 2), dv = new DataView(buf);
+    const w = (off, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(off + i, s.charCodeAt(i)); };
+    w(0, "RIFF"); dv.setUint32(4, 36 + pcm.length * 2, true); w(8, "WAVE"); w(12, "fmt ");
+    dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, target, true); dv.setUint32(28, target * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+    w(36, "data"); dv.setUint32(40, pcm.length * 2, true);
+    new Int16Array(buf, 44).set(pcm);
+    const bytes = new Uint8Array(buf); let bin = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
   }
-  h += "</div>";
-
-  h += "<h2>隱私</h2><div class='card'><div class='m'>你的待辦與花費存在服務的試算表，完成滿 90 天會自動清除。你可以隨時刪除全部資料。</div>" +
-    "<div class='row'><button class='danger' data-act='deleteMe'>刪除我的所有資料</button></div></div>";
-  return h;
-}
-
-/* ---------- 操作 ---------- */
-const findTask = (id) => S.data.tasks.find((t) => t.id === id);
-
-async function act(name, ds) {
-  if (S.busy) return;
-  switch (name) {
-    case "done": {
-      const t = findTask(ds.id);
-      let amount = 0;
-      if (t && t.budget > 0) {
-        const v = await modal({ title: "「" + t.name + "」實際花了多少？", input: { type: "number", value: t.budget, placeholder: "沒花錢就填 0" }, ok: "完成並記帳" });
-        if (v === null) return;
-        amount = Number(v) || 0;
-      }
-      return run("done", { taskId: ds.id, amount: amount }, "已完成 ✅");
-    }
-    case "cancel": {
-      const t = findTask(ds.id);
-      const ok = await modal({ title: "取消「" + (t ? t.name : "這項待辦") + "」？", ok: "取消待辦", cancel: "保留", danger: true });
-      if (ok) return run("cancelTask", { taskId: ds.id }, "已取消");
-      return;
-    }
-    case "cal": {
-      const t = findTask(ds.id);
-      if (t && t.cal) liff.openWindow({ url: t.cal, external: true });
-      return;
-    }
-    case "approve": return run("approve", { batch: ds.b }, "已加入待辦 ✅");
-    case "cancelBatch": return run("cancelBatch", { batch: ds.b }, "已取消");
-    case "parse": {
-      const text = ($("#aiText").value || "").trim();
-      if (!text) return toast("先輸入內容");
-      S.busy = true;
-      toast("解析中…");
-      try {
-        const r = await api("addText", { text: text });
-        if (!r.tasks.length) { toast(r.note || "沒有辨識出待辦"); }
-        else if (r.auto) { S.preview = null; S.tab = "todo"; toast("已自動加入 " + r.tasks.length + " 項待辦 ✅"); await refresh(); }
-        else { S.preview = r; render(); }
-      } catch (e) {
-        if (e.message !== "login" && e.message !== "auth") toast(e.message);
-      } finally { S.busy = false; }
-      return;
-    }
-    case "pvOk": {
-      const b = S.preview && S.preview.batch;
-      return run("approve", { batch: b }, "已加入待辦 ✅", () => { S.preview = null; S.tab = "todo"; });
-    }
-    case "pvNo": {
-      const b = S.preview && S.preview.batch;
-      return run("cancelBatch", { batch: b }, "已取消", () => { S.preview = null; });
-    }
-    case "addForm": {
-      const name = ($("#f_name").value || "").trim();
-      if (!name) return toast("請填寫待辦名稱");
-      return run("addForm", {
-        name: name, due: $("#f_due").value, slot: $("#f_slot").value,
-        hours: $("#f_hours").value, budget: $("#f_budget").value, location: $("#f_loc").value
-      }, "已加入待辦 ✅", () => { S.tab = "todo"; });
-    }
-    case "copyFeed": {
-      const el = $("#feed");
-      try { await navigator.clipboard.writeText(el.value); toast("已複製"); }
-      catch (e) { el.select(); document.execCommand("copy"); toast("已複製"); }
-      return;
-    }
-    case "resetFeed": {
-      const ok = await modal({ title: "重設訂閱連結？", body: "舊連結會立刻失效，已訂閱的日曆需要重新加入。", ok: "重設", danger: true });
-      if (ok) return run("resetFeed", {}, "已重設");
-      return;
-    }
-    case "deleteMe": {
-      const ok = await modal({ title: "刪除所有資料？", body: "會刪除你的待辦、花費與設定，無法復原。", ok: "全部刪除", danger: true });
-      if (!ok) return;
-      S.busy = true;
-      try {
-        await api("deleteMe");
-        $("#view").innerHTML = "<div class='empty'>已刪除你的所有資料 ✅<br>之後想再使用，直接傳訊息給機器人就會重新開始。</div>";
-        setTimeout(() => { try { liff.closeWindow(); } catch (e) {} }, 1800);
-      } catch (e) { toast(e.message); }
-      finally { S.busy = false; }
-      return;
-    }
-  }
-}
-
-document.addEventListener("click", (ev) => {
-  const el = ev.target.closest("[data-act]");
-  if (el) { act(el.dataset.act, el.dataset); return; }
-  const tab = ev.target.closest("#tabs button");
-  if (tab) { S.tab = tab.dataset.tab; render(); window.scrollTo(0, 0); }
-});
-
-document.addEventListener("change", (ev) => {
-  if (!ev.target.hasAttribute("data-set")) return;
-  run("saveSettings", { auto: $("#s_auto").checked, ai: $("#s_ai").checked, slot: $("#s_slot").value }, "已儲存");
-});
-
-/* ---------- 啟動 ---------- */
-async function main() {
-  if (!/^https:\/\/script\.google\.com\/.+\/exec/.test(CFG.GAS_URL)) {
-    $("#view").innerHTML = "<div class='empty'>尚未設定後端網址<br><small>請編輯 index.html 最上方的 GAS_URL</small></div>";
+};
+async function toggleMic() {
+  const mic = $("#mic");
+  if (!Rec.active) {
+    try { await Rec.start(); } catch (e) { toast(e.name === "NotAllowedError" ? "沒有麥克風權限，請到系統設定允許" : e.message, true); return; }
+    mic.classList.add("rec"); mic.textContent = "⏹";
+    Rec.timer = setInterval(() => {
+      const s = Math.floor((Date.now() - Rec.t0) / 1000);
+      $("#micTip").textContent = "錄音中 " + s + " 秒…再按一次送出";
+      if (s >= 60) toggleMic();
+    }, 250);
     return;
   }
-  try {
-    await liff.init({ liffId: CFG.LIFF_ID });
-    if (!liff.isLoggedIn()) { liff.login(); return; }
-    await refresh();
-  } catch (e) {
-    if (e.message === "login" || e.message === "auth") return;
-    $("#view").innerHTML = "<div class='empty'>載入失敗<br><small>" + esc(e.message) + "</small><div class='row' style='justify-content:center'><button onclick='location.reload()'>重新載入</button></div></div>";
-  }
+  clearInterval(Rec.timer); mic.classList.remove("rec"); mic.textContent = "🎤";
+  $("#micTip").textContent = "辨識中…";
+  const data = await Rec.stop();
+  if (Rec.chunks.length < 3) { $("#micTip").textContent = "按一下開始錄音，再按一下送出（最長 60 秒）"; toast("錄音太短了", true); return; }
+  await submitParse({ audio: { mime: "audio/wav", data: data } });
+  $("#micTip").textContent = "按一下開始錄音，再按一下送出（最長 60 秒）";
+}
+async function submitParse(payload) {
+  $("#smartGo").disabled = true;
+  const j = await run(() => api("parse", payload));
+  $("#smartGo").disabled = false;
+  if (j && j.ok) {
+    $("#smartText").value = ""; $("#cnt").textContent = "0/800";
+    toast(j.mode === "scheduled" ? "已排程 " + j.count + " 項" : "整理好 " + j.count + " 項，請確認");
+    if (j.transcript) setTimeout(() => toast("我聽到：" + j.transcript), 2700);
+    go("list");
+  } else if (j && j.transcript) { $("#smartText").value = j.transcript; }
 }
 
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-main();
+/* ===== 事件 ===== */
+function findTask(id) { return S.tasks.find(t => t.id === id); }
+function openDone(t) {
+  S.dialogTask = t; $("#dTitle").textContent = "「" + t.name + "」完成了！"; $("#dAmt").value = "";
+  $("#dQuick").innerHTML = (t.budget > 0 ? '<button class="btn" data-amt="' + t.budget + '">用預算 ' + money(t.budget) + "</button>" : "") + '<button class="btn" data-amt="0">沒花錢</button>';
+  $("#ovDone").classList.add("on"); setTimeout(() => $("#dAmt").focus(), 250);
+}
+async function confirmDone(amount) {
+  const t = S.dialogTask; if (!t) return;
+  $("#ovDone").classList.remove("on");
+  await run(() => api("complete", { id: t.id, amount: amount }), j => j.amount > 0 ? "已記帳 " + money(j.amount) : "已完成 🎉");
+}
+function openCal(t) {
+  S.dialogTask = t; $("#cTitle").textContent = t.name + "｜" + t.when; $("#ovCal").classList.add("on");
+}
+function openExternal(url) {
+  try { if (window.liff && liff.isInClient()) { liff.openWindow({ url: url, external: true }); return; } } catch (e) { /* ignore */ }
+  window.open(url, "_blank", "noopener");
+}
+document.addEventListener("click", async e => {
+  const tabBtn = e.target.closest("nav.tabs button"); if (tabBtn) return go(tabBtn.dataset.tab);
+  const goBtn = e.target.closest("[data-tab-go]"); if (goBtn) return go(goBtn.dataset.tabGo);
+  if (e.target.closest("[data-close]") || e.target.classList.contains("overlay")) { $$(".overlay").forEach(o => o.classList.remove("on")); return; }
+  const seg = e.target.closest("#addSeg button"); if (seg) return setAddMode(seg.dataset.mode);
+  const ex = e.target.closest("#examples button"); if (ex) { $("#smartText").value = ex.textContent; $("#cnt").textContent = ex.textContent.length + "/800"; return; }
+  const ym = e.target.closest("[data-ym]"); if (ym) { S.ym = shiftYm(S.ym, +ym.dataset.ym); return loadExpenses(); }
+  const op = e.target.closest("[data-open]"); if (op) return openExternal(op.dataset.open);
+  const amt = e.target.closest("[data-amt]"); if (amt) return confirmDone(+amt.dataset.amt);
+
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const act = b.dataset.act, card = b.closest(".task"), batchEl = b.closest(".batch");
+  const t = card ? findTask(card.dataset.id) : null;
+  if (act === "done" && t) return openDone(t);
+  if (act === "cal" && t) return openCal(t);
+  if (act === "cancel" && t) { if (confirm("取消「" + t.name + "」？\n（如果已經加進日曆，要到日曆自己刪除）")) run(() => api("cancelTask", { id: t.id }), "已取消"); return; }
+  if (batchEl) {
+    const batch = batchEl.dataset.batch;
+    if (act === "approve") return run(() => api("approve", { batch: batch }), j => "已排程 " + j.count + " 項，點卡片的「日曆」加入你的日曆");
+    if (act === "cancelBatch") { if (confirm("確定全部取消？")) run(() => api("cancelBatch", { batch: batch }), "已作廢"); return; }
+    if (act === "adjust") { $(".adjust", batchEl).classList.toggle("on"); const i = $(".adjust input", batchEl); if (i) i.focus(); return; }
+    if (act === "adjustGo") { const text = $(".adjust input", batchEl).value.trim(); if (!text) return toast("請輸入要調整的內容", true); return run(() => api("adjust", { batch: batch, text: text }), "已重新整理，請再確認一次"); }
+  }
+});
+document.addEventListener("change", e => { if (["sAuto", "sAi", "sRemind", "sHours", "sStart"].indexOf(e.target.id) !== -1) saveSettings(); });
+document.addEventListener("click", async e => {
+  const id = e.target.id;
+  if (id === "smartGo") { const text = $("#smartText").value.trim(); if (!text) return toast("先輸入想做的事", true); return submitParse({ text: text }); }
+  if (id === "mic") return toggleMic();
+  if (id === "formGo") {
+    const body = { name: $("#fName").value, date: $("#fDate").value, time: $("#fTime").value, hours: $("#fHours").value, budget: $("#fBudget").value, location: $("#fLoc").value, category: $("#fCat").value };
+    if (!body.name.trim()) return toast("請填任務名稱", true);
+    if (!body.date) return toast("請選擇日期", true);
+    const j = await run(() => api("addForm", body), "已加入清單 ✔");
+    if (j && j.ok) { ["fName", "fTime", "fBudget", "fLoc", "fCat"].forEach(i => { $("#" + i).value = ""; }); go("list"); }
+    return;
+  }
+  if (id === "dOk") { const v = $("#dAmt").value; return confirmDone(v === "" ? 0 : Math.max(0, parseFloat(v) || 0)); }
+  if (id === "cG" && S.dialogTask) return openExternal(S.dialogTask.gcal);
+  if (id === "cI" && S.dialogTask) return openExternal(S.dialogTask.ics);
+  if (id === "subCopy") { try { await navigator.clipboard.writeText(S.me.feedUrl); toast("已複製訂閱網址"); } catch (er) { prompt("長按複製：", S.me.feedUrl); } return; }
+  if (id === "delBtn") { $("#delTxt").value = ""; $("#ovDel").classList.add("on"); return; }
+  if (id === "delOk") {
+    if ($("#delTxt").value.trim() !== "刪除") return toast("請輸入「刪除」兩個字", true);
+    $("#ovDel").classList.remove("on");
+    const j = await run(() => api("deleteMe", { confirm: "DELETE" }));
+    if (j && j.ok) fatal({ title: "資料已全部刪除", body: "謝謝你使用克羅諾斯。之後想再用，從 LINE 開啟控制台就會重新開始。" });
+    return;
+  }
+  if (id === "closeWin") return liff.closeWindow();
+  if (id === "logout") { liff.logout(); location.reload(); }
+});
+$("#smartText").addEventListener("input", e => { $("#cnt").textContent = e.target.value.length + "/800"; });
+
+/* ===== 啟動 ===== */
+async function boot() {
+  if (!window.liff) return fatal({ title: "載入失敗", body: "LINE 的元件沒有載入成功，請檢查網路後重新載入。" }, true);
+  try { await liff.init({ liffId: CFG.LIFF_ID }); } catch (e) { return fatal({ title: "LIFF 初始化失敗", body: String(e.message || e) }, true); }
+  if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
+  let j;
+  try { j = await api("init"); } catch (e) { return fatal({ title: "連不上伺服器", body: e.message }, true); }
+  if (!j.ok) {
+    if (j.code === "CLOSED") return fatal({ title: "暫停加入", body: j.error });
+    if (j.code === "INVITE") {
+      const code = prompt("需要邀請碼才能使用，請輸入：");
+      if (code) { await api("invite", { code: code }); return location.reload(); }
+      return fatal({ title: "需要邀請碼", body: "請向管理者索取邀請碼，再重新開啟。" }, true);
+    }
+    return fatal({ title: "無法使用", body: j.error || "請稍後再試" }, true);
+  }
+  S.me = j.me; S.ym = curYm();
+  S.today = j.snap.today; S.tasks = j.snap.tasks; S.done = j.snap.done;
+  let name = j.me.name, pic = "";
+  try { const p = await liff.getProfile(); name = name || p.displayName; pic = p.pictureUrl || ""; } catch (e) { /* 沒有 profile 權限也沒關係 */ }
+  $("#hi").textContent = "嗨，" + (name || "你好") + "！";
+  if (pic) $("#avatar").innerHTML = '<img class="avatar" alt="" src="' + esc(pic) + '">';
+  $("#boot").hidden = true; $("#app").hidden = false;
+  const q = new URLSearchParams(location.search);
+  let tab = q.get("tab");
+  if (!tab && q.get("liff.state")) tab = new URLSearchParams(q.get("liff.state").replace(/^\?/, "")).get("tab");
+  $("#fDate").value = S.today; $("#fHours").value = S.me.settings.defHours;
+  renderHeader(); renderList(); syncAiUi();
+  go(["list", "add", "expense", "settings"].indexOf(tab) !== -1 ? tab : "list");
+  if (tab === "add" && !S.me.settings.ai) setAddMode("form");
+}
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+window.addEventListener("load", boot);
 </script>
 </body>
 </html>
