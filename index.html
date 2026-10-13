@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Chronos 控制台</title>
+<title>Chronos 排程查詢</title>
 <meta name="description" content="克羅諾斯智慧助理：待辦、日曆、記帳一站管理">
 <meta name="theme-color" content="#0ea5e9">
 <link rel="manifest" href="manifest.json">
@@ -53,6 +53,15 @@ section.view.on{display:block}
 .meta{display:flex;flex-wrap:wrap;gap:6px}
 .chip{background:var(--chip);border-radius:999px;padding:2px 10px;font-size:12.5px;color:var(--muted);word-break:break-all}
 .chip.warn{color:var(--warn);background:rgba(217,119,6,.12)}
+.warnline{margin-top:8px;font-size:13px;color:var(--warn);background:rgba(217,119,6,.12);border-radius:10px;padding:6px 10px}
+.r2{display:flex;gap:6px}.set .r2 input{width:auto;min-width:0;flex:1;padding:8px 6px;font-size:14px}.set .r2{flex:1;max-width:236px}
+.blk{border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0}
+.blk .days{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.blk .days button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--muted);font-weight:700}
+.blk .days button.on{background:#0ea5e9;border-color:#0ea5e9;color:#fff}
+.blk .r{display:flex;gap:6px;align-items:center;margin-top:6px}.blk .r input{min-width:0}
+.blk .r input[type=time]{min-width:0}
+.blk .r input.lb{flex:1.2}
 .actions{display:flex;gap:8px;margin-top:12px}
 .btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 14px;font-weight:600;cursor:pointer;min-height:42px}
 .btn:active{transform:scale(.98)}
@@ -286,7 +295,7 @@ async function api(act, data) {
 }
 function authExpired() {
   try { if (!liff.isInClient()) { liff.logout(); liff.login({ redirectUri: location.href.split("?")[0] }); return; } } catch (e) { /* ignore */ }
-  fatal({ title: "登入逾時", body: "請關閉這個視窗，再從 LINE 選單重新開啟控制台。" }, true);
+  fatal({ title: "登入逾時", body: "請關閉這個視窗，再從 LINE 選單重新開啟排程查詢。" }, true);
 }
 async function run(fn, okMsg) {
   if (S.busy) return;
@@ -317,6 +326,7 @@ function chips(t) {
 }
 function taskCard(t, pending) {
   return '<article class="task ' + (pending ? "pending" : t.overdue ? "overdue" : "") + '" data-id="' + esc(t.id) + '"><h3>' + esc(t.name) + '</h3><div class="meta">' + chips(t) + "</div>" +
+    (pending && t.warn ? '<div class="warnline">⏰ ' + esc(t.warn) + "</div>" : "") +
     (pending ? "" : '<div class="actions"><button class="btn primary" data-act="done">✅ 完成</button><button class="btn" data-act="cal">📅 日曆</button><button class="btn ghost" data-act="cancel">取消</button></div>') + "</article>";
 }
 function renderList() {
@@ -329,7 +339,9 @@ function renderList() {
   Object.keys(batches).forEach(b => {
     h += '<div class="batch" data-batch="' + esc(b) + '"><div class="t">🟣 待審核 · ' + batches[b].length + " 項</div>" +
       batches[b].map(t => taskCard(t, true)).join("") +
-      '<div class="actions"><button class="btn primary" data-act="approve">確認無誤</button><button class="btn" data-act="adjust">調整</button><button class="btn danger" data-act="cancelBatch">全部取消</button></div>' +
+      '<div class="actions"><button class="btn primary" data-act="approve">' + (batches[b].some(t => t.warn) ? "照樣加入" : "確認無誤") + "</button>" +
+      (batches[b].some(t => t.warn) ? '<button class="btn blue" data-act="slotBatch">幫我換空檔</button>' : "") +
+      '<button class="btn" data-act="adjust">調整</button><button class="btn danger" data-act="cancelBatch">全部取消</button></div>' +
       '<div class="adjust"><input maxlength="300" placeholder="例如：電池改後天買、報告移到最前面"><button class="btn blue" data-act="adjustGo">送出</button></div></div>';
   });
   const overdue = sched.filter(t => t.overdue);
@@ -366,6 +378,7 @@ async function loadExpenses() {
 function sel(id, opts, cur) { return '<select id="' + id + '">' + opts.map(o => '<option value="' + o[0] + '"' + (String(o[0]) === String(cur) ? " selected" : "") + ">" + o[1] + "</option>").join("") + "</select>"; }
 function renderSettings() {
   const me = S.me, s = me.settings;
+  S.blocks = (s.blocks || []).map(b => ({ d: b.d.slice(), f: b.f, t: b.t, l: b.l, c: b.c ? 1 : 0 }));
   const feed = me.feedUrl, web = feed.replace(/^https:/, "webcal:");
   const gcalSub = "https://calendar.google.com/calendar/r?cid=" + encodeURIComponent(web);
   const hours = []; for (let i = 6; i <= 22; i++) hours.push([i, (i < 10 ? "0" : "") + i + ":00"]);
@@ -377,6 +390,13 @@ function renderSettings() {
     '<div class="set"><div><b>預設時數</b><small>表單沒填時使用</small></div>' + sel("sHours", [[0.5, "0.5 小時"], [1, "1 小時"], [1.5, "1.5 小時"], [2, "2 小時"], [3, "3 小時"], [4, "4 小時"]], s.defHours) + "</div>" +
     '<div class="set"><div><b>預設開始時間</b><small>沒指定時段與時間時使用</small></div>' + sel("sStart", hours, s.defStart) + "</div></div>" +
 
+    '<div class="card"><b>作息與時間提醒</b><p class="note">設定後，新增的事情撞到睡眠或固定時段會提醒你，日曆提醒也會避開睡眠時間。不想設定可以留空。</p>' +
+    '<div class="set"><div><b>睡眠</b><small>睡 → 起</small></div><div class="r2"><input type="time" id="sSleepA" value="' + esc(sleepPart(s.sleep, 0)) + '"><input type="time" id="sSleepB" value="' + esc(sleepPart(s.sleep, 1)) + '"></div></div>' +
+    '<div class="set"><div><b>國定假日不算固定時段</b><small>假日當天不檢查上班、上課等固定時段</small></div><label class="sw"><input type="checkbox" id="sHoliday"' + (s.holiday ? " checked" : "") + "><i></i></label></div>" +
+    '<div class="set"><div><b>LINE 提醒</b><small>任務前 1 小時推播；沒確認的待辦時間到會再提醒（會用到 LINE 推播額度）</small></div><label class="sw"><input type="checkbox" id="sPush"' + (s.remindPush ? " checked" : "") + "><i></i></label></div>" +
+    '<div class="set"><div><b>撞到時自動換空檔</b><small>關閉時只提醒，由你決定要不要照樣加入</small></div><label class="sw"><input type="checkbox" id="sSlot"' + (s.slotAuto ? " checked" : "") + "><i></i></label></div>" +
+    '<div style="margin-top:6px"><b>固定時段</b><small class="note" style="display:block">例如上班、上課、運動。在 LINE 傳課表截圖，上課時段會自動放進來（📚）。</small><div id="blkList">' + blocksHtml() + '</div><button class="btn" id="blkAdd">＋ 新增固定時段</button></div></div>' +
+
     '<div class="card"><b>日曆自動訂閱 <span class="chip">實驗性</span></b><p class="note">訂閱一次，之後排程的事項會自動出現在你的日曆。但 Google 日曆更新訂閱常會延遲數小時，要即時請用任務卡上的「加入日曆」。這個網址等同你的專屬金鑰，請不要分享給別人。</p>' +
     '<div class="qrow"><button class="btn" id="subCopy">複製訂閱網址</button><button class="btn" data-open="' + esc(gcalSub) + '">加到 Google 日曆</button><button class="btn" data-open="' + esc(web) + '">iPhone 訂閱</button></div></div>' +
 
@@ -387,13 +407,28 @@ function renderSettings() {
     '<p class="note" style="text-align:center">' + esc(me.name || "") + (me.admin ? " · 管理者" : "") + '</p>' +
     '<div class="qrow" style="justify-content:center">' + (liff.isInClient() ? '<button class="btn ghost" id="closeWin">關閉視窗，回到聊天</button>' : '<button class="btn ghost" id="logout">登出</button>') + "</div>";
 }
+function sleepPart(v, i) { const p = String(v || "").split("-"); return p.length === 2 ? p[i] : ""; }
+const DAYN = ["一", "二", "三", "四", "五", "六", "日"];
+function blocksHtml() {
+  const bl = S.blocks || [];
+  if (!bl.length) return '<p class="note">還沒有固定時段。</p>';
+  return bl.map((b, i) => '<div class="blk" data-i="' + i + '" data-c="' + (b.c ? 1 : 0) + '"><div class="days">' + DAYN.map((n, k) => '<button type="button" data-day="' + (k + 1) + '" class="' + (b.d.indexOf(k + 1) !== -1 ? "on" : "") + '">' + n + "</button>").join("") + "</div>" +
+    '<div class="r"><input type="time" class="bf" value="' + esc(b.f) + '"><span>–</span><input type="time" class="bt" value="' + esc(b.t) + '"></div><div class="r"><input class="lb" maxlength="12" value="' + esc(b.l) + '" placeholder="名稱，例如上班"><button type="button" class="btn ghost" data-blkdel="' + i + '" aria-label="刪除">✕ 刪除</button></div></div>').join("");
+}
+function readBlocks() {
+  return $$("#blkList .blk").map(el => ({
+    d: $$("[data-day].on", el).map(b => +b.dataset.day), f: $(".bf", el).value, t: $(".bt", el).value, l: $(".lb", el).value.trim() || "固定時段", c: +el.dataset.c || 0
+  })).filter(b => b.d.length && b.f && b.t && b.f < b.t);
+}
 let saveTimer = null;
 function saveSettings() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
-    const settings = { auto: $("#sAuto").checked, ai: $("#sAi").checked, remind: +$("#sRemind").value, defHours: +$("#sHours").value, defStart: +$("#sStart").value };
+    const a = $("#sSleepA").value, b = $("#sSleepB").value;
+    const settings = { auto: $("#sAuto").checked, ai: $("#sAi").checked, remind: +$("#sRemind").value, defHours: +$("#sHours").value, defStart: +$("#sStart").value,
+      holiday: $("#sHoliday").checked, slotAuto: $("#sSlot").checked, remindPush: $("#sPush").checked, sleep: (a && b && a !== b) ? a + "-" + b : "", blocks: readBlocks() };
     const j = await run(() => api("saveSettings", { settings: settings }), "已儲存");
-    if (j && j.me) { S.me = j.me; syncAiUi(); }
+    if (j && j.me) { S.me = j.me; S.blocks = j.me.settings.blocks || []; syncAiUi(); }
   }, 350);
 }
 function syncAiUi() {
@@ -534,12 +569,25 @@ document.addEventListener("click", async e => {
   if (batchEl) {
     const batch = batchEl.dataset.batch;
     if (act === "approve") return run(() => api("approve", { batch: batch }), j => "已排程 " + j.count + " 項，點卡片的「日曆」加入你的日曆");
+    if (act === "slotBatch") return run(() => api("slotBatch", { batch: batch }), j => j.moved ? "已換到空檔，請再確認一次" : "沒有可換的空檔（7 天內都排不進去）");
     if (act === "cancelBatch") { if (confirm("確定全部取消？")) run(() => api("cancelBatch", { batch: batch }), "已作廢"); return; }
     if (act === "adjust") { $(".adjust", batchEl).classList.toggle("on"); const i = $(".adjust input", batchEl); if (i) i.focus(); return; }
     if (act === "adjustGo") { const text = $(".adjust input", batchEl).value.trim(); if (!text) return toast("請輸入要調整的內容", true); return run(() => api("adjust", { batch: batch, text: text }), "已重新整理，請再確認一次"); }
   }
 });
-document.addEventListener("change", e => { if (["sAuto", "sAi", "sRemind", "sHours", "sStart"].indexOf(e.target.id) !== -1) saveSettings(); });
+document.addEventListener("change", e => {
+  if (["sAuto", "sAi", "sRemind", "sHours", "sStart", "sSleepA", "sSleepB", "sHoliday", "sSlot", "sPush"].indexOf(e.target.id) !== -1 || e.target.closest("#blkList")) saveSettings();
+});
+document.addEventListener("click", e => {
+  const dayBtn = e.target.closest("#blkList [data-day]");
+  if (dayBtn) { dayBtn.classList.toggle("on"); return saveSettings(); }
+  const del = e.target.closest("[data-blkdel]");
+  if (del) { S.blocks = readBlocks(); S.blocks.splice(+del.dataset.blkdel, 1); $("#blkList").innerHTML = blocksHtml(); return saveSettings(); }
+  if (e.target.id === "blkAdd") {
+    S.blocks = readBlocks(); S.blocks.push({ d: [1, 2, 3, 4, 5], f: "09:00", t: "18:00", l: "上班" });
+    $("#blkList").innerHTML = blocksHtml(); return saveSettings();
+  }
+});
 document.addEventListener("click", async e => {
   const id = e.target.id;
   if (id === "smartGo") { const text = $("#smartText").value.trim(); if (!text) return toast("先輸入想做的事", true); return submitParse({ text: text }); }
@@ -548,7 +596,7 @@ document.addEventListener("click", async e => {
     const body = { name: $("#fName").value, date: $("#fDate").value, time: $("#fTime").value, hours: $("#fHours").value, budget: $("#fBudget").value, location: $("#fLoc").value, category: $("#fCat").value };
     if (!body.name.trim()) return toast("請填任務名稱", true);
     if (!body.date) return toast("請選擇日期", true);
-    const j = await run(() => api("addForm", body), "已加入清單 ✔");
+    const j = await run(() => api("addForm", body), j => j.warn ? "已加入，但提醒你：" + j.warn : "已加入清單 ✔");
     if (j && j.ok) { ["fName", "fTime", "fBudget", "fLoc", "fCat"].forEach(i => { $("#" + i).value = ""; }); go("list"); }
     return;
   }
@@ -561,7 +609,7 @@ document.addEventListener("click", async e => {
     if ($("#delTxt").value.trim() !== "刪除") return toast("請輸入「刪除」兩個字", true);
     $("#ovDel").classList.remove("on");
     const j = await run(() => api("deleteMe", { confirm: "DELETE" }));
-    if (j && j.ok) fatal({ title: "資料已全部刪除", body: "謝謝你使用克羅諾斯。之後想再用，從 LINE 開啟控制台就會重新開始。" });
+    if (j && j.ok) fatal({ title: "資料已全部刪除", body: "謝謝你使用克羅諾斯。之後想再用，從 LINE 開啟排程查詢就會重新開始。" });
     return;
   }
   if (id === "closeWin") return liff.closeWindow();
